@@ -1,0 +1,23 @@
+# Môi trường ảo, cache Python
+.venv/
+__pycache__/
+*.pyc
+
+# Model (~16 GB) và code bên thứ ba (clone lại theo README)
+models/
+third_party/
+
+# Kết quả chạy, file thử nghiệm
+outputs/
+tests/out/
+
+# Video / audio (clip mẫu có bản quyền của người khác)
+*.mp4
+*.mov
+*.mkv
+*.webm
+*.wav
+
+# File tạm
+*.tmp
+*.log

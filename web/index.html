@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Douyin Dub Local</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Douyin Dub Local</h1>
+  <nav id="steps">
+    <button data-step="1" class="active">1. Tải video</button>
+    <button data-step="2">2. Chép lời &amp; dịch</button>
+    <button data-step="3">3. Lồng tiếng</button>
+    <button data-step="4">4. Xuất video</button>
+  </nav>
+</header>
+
+<div id="status" hidden>
+  <span class="spinner"></span><span id="status-text"></span>
+  <progress id="status-progress" hidden></progress>
+</div>
+<div id="error" hidden></div>
+
+<main>
+  <!-- BƯỚC 1 -->
+  <section data-step="1">
+    <div class="grid2">
+      <div>
+        <label id="drop" class="drop">
+          <input type="file" id="file" accept="video/*" hidden>
+          <strong>Kéo thả video vào đây</strong><br>hoặc bấm để chọn file (.mp4)
+          <div id="file-name" class="muted"></div>
+        </label>
+        <label class="check"><input type="checkbox" id="auto" checked> Làm hết tự động (chạy thẳng tới xuất video)</label>
+        <button id="upload" class="primary" disabled>Tải lên</button>
+        <h3>Dự án gần đây</h3>
+        <ul id="projects" class="projects"></ul>
+      </div>
+      <div>
+        <h3 id="project-title">Chưa chọn dự án</h3>
+        <video id="source-video" controls hidden></video>
+        <div id="project-steps" class="steplist"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BƯỚC 2 -->
+  <section data-step="2" hidden>
+    <div class="toolbar">
+      <button id="run-transcribe" class="primary">Nhận dạng &amp; dịch</button>
+      <button id="run-translate">Dịch lại (giữ câu đã sửa tay)</button>
+    </div>
+    <details>
+      <summary>Bảng tên riêng (giúp dịch tên nhân vật đúng và thống nhất)</summary>
+      <p class="muted">Mỗi dòng: <code>tên Trung = cách dịch</code>, ví dụ <code>黑死牟 = Kokushibo</code>. Lưu xong bấm "Dịch lại".</p>
+      <textarea id="glossary" rows="6"></textarea>
+      <button id="save-glossary">Lưu bảng tên</button>
+    </details>
+    <p class="muted">Sửa ô tiếng Việt rồi bấm ra ngoài là tự lưu. Câu đã sửa sẽ phải lồng tiếng lại (trạng thái "cũ").</p>
+    <table class="segs">
+      <thead><tr><th>#</th><th>Thời gian</th><th>Tiếng Trung</th><th>Tiếng Việt</th><th>Người nói</th><th>Audio</th></tr></thead>
+      <tbody id="seg-body"></tbody>
+    </table>
+  </section>
+
+  <!-- BƯỚC 3 -->
+  <section data-step="3" hidden>
+    <div class="toolbar">
+      <div id="voices"></div>
+      <button id="run-tts" class="primary">Lồng tiếng các câu chưa có / đã sửa</button>
+    </div>
+    <div id="report"></div>
+    <table class="segs">
+      <thead><tr><th>#</th><th>Tiếng Việt</th><th>Khớp thời gian</th><th>Nghe</th><th></th></tr></thead>
+      <tbody id="tts-body"></tbody>
+    </table>
+  </section>
+
+  <!-- BƯỚC 4 -->
+  <section data-step="4" hidden>
+    <div class="grid2">
+      <div>
+        <h3>Phụ đề</h3>
+        <div class="radios">
+          <label><input type="radio" name="subs" value="vi"> Tiếng Việt</label>
+          <label><input type="radio" name="subs" value="bilingual"> Song ngữ</label>
+          <label><input type="radio" name="subs" value="none"> Không</label>
+        </div>
+        <h3>Kiểu phụ đề</h3>
+        <div class="radios">
+          <label><input type="radio" name="style" value="outline"> Chữ viền (không che)</label>
+          <label><input type="radio" name="style" value="blur"> Làm mờ chữ Trung</label>
+          <label><input type="radio" name="style" value="box"> Khung nền che</label>
+        </div>
+        <h3>Dải chữ Trung (vị trí phụ đề, vùng che / làm mờ)</h3>
+        <div class="preview-wrap"><video id="box-video" muted controls></video><div id="box-overlay"></div></div>
+        <label class="slider">Vị trí (mép trên) <input type="range" id="box-top" min="0" max="0.95" step="0.01"><output></output></label>
+        <label class="slider">Chiều cao <input type="range" id="box-height" min="0.04" max="0.5" step="0.01"><output></output></label>
+        <label class="slider">Độ đặc (kiểu khung) <input type="range" id="box-opacity" min="0" max="1" step="0.05"><output></output></label>
+        <button id="detect-box">Tự phát hiện vùng chữ Trung (OCR)</button>
+        <h3>Âm thanh</h3>
+        <label class="slider">Nhạc nền <input type="range" id="bg-volume" min="0" max="2" step="0.05"><output></output></label>
+        <label class="slider">Giảm nhạc khi có giọng (dB) <input type="range" id="duck-db" min="-30" max="0" step="1"><output></output></label>
+        <label class="slider">Giữ giọng Trung gốc <input type="range" id="keep-vocals" min="0" max="0.5" step="0.01"><output></output></label>
+        <button id="run-render" class="primary">Lưu cài đặt &amp; xuất video</button>
+      </div>
+      <div>
+        <h3>Kết quả</h3>
+        <video id="final-video" controls hidden></video>
+        <div id="downloads"></div>
+      </div>
+    </div>
+  </section>
+</main>
+<script src="app.js"></script>
+</body>
+</html>

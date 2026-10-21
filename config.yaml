@@ -1,0 +1,82 @@
+# Cấu hình Douyin Dub Local. Đường dẫn tương đối tính từ thư mục dự án.
+
+paths:
+  outputs: outputs
+  models: models                       # model tách giọng + FireRed
+  firered_repo: third_party/FireRedASR2S
+
+separation:
+  model: vocals_mel_band_roformer.ckpt  # Mel-Band RoFormer (Kim); dự phòng: htdemucs_ft.yaml
+
+asr:
+  merge_max_duration: 10.0    # gộp các vế FireRed thành câu dài tối đa (giây); 8s hay cắt giữa ý
+  merge_max_gap: 0.3          # khoảng lặng tối đa giữa hai vế được gộp (giây)
+
+diarization:
+  enabled: true
+  model: campplus_zh_16k.onnx   # CAM++ tiếng Trung (3D-Speaker) qua sherpa-onnx, CPU
+  distance_threshold: 0.45      # khoảng cách cosine tối đa để 2 câu cùng giọng (thử: 0.3–0.5 đều đúng, xem tests/test_diarize.py)
+  min_segment_s: 1.0            # câu ngắn hơn: vector kém tin cậy, gán theo nhóm gần nhất
+  min_speaker_s: 3.0            # người nói tổng cộng ít hơn: nhập vào người gần nhất
+
+ocr:
+  enabled: true
+  sample_frames: 30             # số khung lấy mẫu để tìm dải phụ đề Trung
+  min_hit_ratio: 0.25           # phải thấy phụ đề ở >=25% số khung mới tin là có phụ đề
+  min_score: 0.6                # độ tin cậy OCR tối thiểu
+  center_tolerance: 0.2         # tâm dòng chữ lệch khỏi giữa hình tối đa 20% chiều ngang
+  read_interval_s: 0.6          # đọc chữ trên màn hình mỗi 0.6s trong thời gian mỗi câu
+  min_overlap: 0.5              # dòng OCR phải có >=50% chữ trùng với bản ASR của câu (loại dòng của câu bên cạnh)
+
+translate:
+  ollama_url: http://localhost:11434
+  model: hf.co/unsloth/Qwen3.6-35B-A3B-GGUF:UD-Q4_K_M
+  num_ctx: 16384
+  temperature: 0.3
+  max_retries: 2
+  syllables_per_sec: 4.0      # VieNeu đọc ~3.9 âm tiết/s; LLM hay dịch vượt 5-10% nên đặt sát mức thật
+  auto_glossary: true         # bảng tên trống thì LLM tự trích tên riêng trước khi dịch
+
+tts:
+  precision: int8             # int8 (nhanh) | fp32 (chất lượng tối đa)
+  default_voice: Thiện Minh
+  # Giọng gán sẵn cho người nói A, B, C... (đổi được trong giao diện)
+  speaker_voices: [Thiện Minh, Ngọc Huyền, Adam bựa, Trúc Ly, Thái Sơn, Mỹ Duyên]
+
+timing:
+  max_tempo: 1.25             # tăng tốc đọc tối đa (atempo, giữ cao độ)
+  shorten_rounds: 2           # số vòng nhờ LLM rút gọn câu còn dài
+  max_shift: 1.0              # câu được bắt đầu trễ tối đa (giây) để câu trước mượn khoảng trống
+  min_gap: 0.08               # khoảng nghỉ tối thiểu giữa hai câu (giây)
+
+render:
+  bg_volume: 1.0              # âm lượng nhạc nền
+  duck_db: -12                # nhạc nền giảm bao nhiêu dB khi có giọng đọc
+  duck_fade_ms: 250           # thời gian tăng/giảm dần khi ducking
+  voice_volume: 1.0
+  keep_original_vocals: 0.0   # giữ lại giọng Trung gốc (0 = tắt, 0.1 = rất nhỏ)
+  subtitle_mode: vi           # vi | bilingual | none
+  crf: 18                     # chất lượng video khi phải mã hoá lại (nhỏ = đẹp hơn)
+
+subtitle:
+  style: blur                 # outline: chữ viền, không che | box: khung nền che chữ Trung | blur: làm mờ dải chữ Trung
+  outline_position: above     # kiểu outline: above = ngay trên dải chữ Trung (không đè chữ) | over = đè lên giữa dải
+  font: Arial
+  font_size_ratio: 0.04       # cỡ chữ = tỉ lệ × cạnh ngắn của video
+  outline: 2                  # độ dày viền đen (px)
+  shadow: 1                   # đổ bóng (px)
+  max_chars_per_line: 40      # câu dài hơn 2 dòng thì tách thành nhiều đoạn phụ đề
+  max_lines: 2
+  box_opacity: 1.0            # kiểu box: độ đặc của khung (0..1); <1 thì chữ Trung còn lờ mờ
+  blur_strength: 20           # kiểu blur: bán kính làm mờ (px)
+  # Dải chữ Trung (kiểu box/blur che chỗ này; mọi kiểu đặt phụ đề giữa dải). OCR tự dò nếu có.
+  landscape:                  # video ngang
+    box_top: 0.80             # mép trên khung, tính theo chiều cao video
+    box_height: 0.17
+    margin_left: 0.05
+    margin_right: 0.05
+  portrait:                   # video dọc 9:16: khung cao hơn, tránh mép dưới và mép phải
+    box_top: 0.66
+    box_height: 0.16
+    margin_left: 0.06
+    margin_right: 0.14
