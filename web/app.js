@@ -88,6 +88,8 @@ async function openProject(id) {
   await refresh();
   const v = $("#source-video"); v.src = fileUrl("source.mp4"); v.hidden = false;
   $("#box-video").src = fileUrl("source.mp4");
+  // ảnh bìa: hiện hình ngay, không phải đợi video tải
+  for (const sel of ["#source-video", "#box-video", "#final-video"]) $(sel).poster = fileUrl("thumb.jpg");
   fillSettings();
   loadProjects();
 }
@@ -231,9 +233,12 @@ for (const [sel] of SLIDERS) $(sel).addEventListener("input", (e) => { e.target.
 // Vẽ khung che lên video xem trước, tính theo vùng hình thật (video có thể bị viền đen)
 function placeOverlay() {
   const v = $("#box-video"), o = $("#box-overlay");
-  if (!v.videoWidth) { o.style.display = "none"; return; }
-  const scale = Math.min(v.clientWidth / v.videoWidth, v.clientHeight / v.videoHeight);
-  const w = v.videoWidth * scale, h = v.videoHeight * scale;
+  // chưa đọc xong metadata video thì dùng kích thước đã lưu trong dự án
+  const info = (state.data && state.data.video) || {};
+  const vw = v.videoWidth || info.width, vh = v.videoHeight || info.height;
+  if (!vw || !v.clientWidth) { o.style.display = "none"; return; }
+  const scale = Math.min(v.clientWidth / vw, v.clientHeight / vh);
+  const w = vw * scale, h = vh * scale;
   const left = (v.clientWidth - w) / 2, top = (v.clientHeight - h) / 2;
   const style = (document.querySelector("input[name=style]:checked") || {}).value || "outline";
   Object.assign(o.style, { display: "flex", left: `${left}px`, width: `${w}px`, top: `${top + h * $("#box-top").value}px`,

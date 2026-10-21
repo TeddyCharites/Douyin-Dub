@@ -3,6 +3,28 @@
 Lồng tiếng Việt cho clip ngắn tiếng Trung (Douyin, 15 giây – 3 phút), chạy hoàn toàn trên máy, không dùng API trả phí.
 Đầu vào là file video có sẵn → đầu ra là video đã lồng tiếng Việt, giữ nhạc nền gốc, có phụ đề Việt (hoặc song ngữ) trong khung che chữ Trung in sẵn, kèm file `.srt`.
 
+## Demo
+
+Trước (trái) và sau (phải): giọng Việt thay giọng Trung, nhạc nền giữ nguyên, dải chữ Trung in sẵn được làm mờ và thay bằng phụ đề Việt.
+
+![Trước / sau](docs/before_after.jpg)
+![Trước / sau](docs/before_after_2.jpg)
+
+**Giao diện web**
+
+| Bước 2: chép lời & dịch | Bước 3: lồng tiếng |
+|---|---|
+| ![Bảng chép lời và bản dịch](docs/ui_transcript.png) | ![Bảng lồng tiếng](docs/ui_dubbing.png) |
+
+Bước 2: từng câu tiếng Trung (kèm chữ OCR đọc từ phụ đề in sẵn) và bản dịch sửa được, sửa câu nào chỉ câu đó lồng tiếng lại.
+Bước 3: chọn giọng cho từng người nói, nghe thử, xem câu nào phải tăng tốc / rút gọn, tạo lại từng câu.
+
+![Bước 4: xuất video](docs/ui_export.png)
+
+Bước 4: chọn kiểu phụ đề (làm mờ chữ Trung / khung nền / chữ viền), chỉnh vị trí dải chữ ngay trên video xem trước, âm lượng nhạc nền, xuất `.mp4` và `.srt`.
+
+> Clip minh hoạ là video thuyết minh anime của kênh Douyin khác, chỉ dùng để thử nghiệm cá nhân; ảnh trên là vài khung hình thu nhỏ. Video gốc và kết quả không được đưa lên repo.
+
 ## Pipeline
 
 | Bước | Việc | Công cụ | Chạy trên |

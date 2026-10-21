@@ -33,6 +33,11 @@ def extract_audio(video, wav, sr, channels):
     ffmpeg("-i", video, "-vn", "-ar", sr, "-ac", channels, "-c:a", "pcm_s16le", wav)
 
 
+def make_thumbnail(video, jpg, duration):
+    """Ảnh bìa cho trình phát video trên web (lấy khung ở ~10% thời lượng)."""
+    ffmpeg("-ss", round(duration * 0.1, 2), "-i", video, "-frames:v", 1, "-q:v", 4, jpg)
+
+
 def change_tempo(src, dst, tempo, sr):
     """Đổi tốc độ đọc, giữ cao độ (atempo), đồng thời đổi sample rate."""
     filters = [f"atempo={tempo:.4f}"] if abs(tempo - 1) > 1e-3 else ["anull"]

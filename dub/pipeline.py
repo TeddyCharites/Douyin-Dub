@@ -12,7 +12,7 @@ import time
 from functools import wraps
 
 from .config import CONFIG, ROOT
-from .media import extract_audio, probe_video
+from .media import extract_audio, make_thumbnail, probe_video
 from .timing import place_all, shorten_target
 from .translate import CJK, Translator, count_syllables, merge_clauses
 from . import diarize as diarize_mod
@@ -72,6 +72,7 @@ def prepare(p):
         raise RuntimeError("Video không có tiếng")
     p.update_info(lambda info: info.update(video=video))
     extract_audio(p.source, p.path("audio", "original.wav"), 44100, 2)
+    make_thumbnail(p.source, p.path("thumb.jpg"), video["duration"])
     p.log(f"Video {video['width']}x{video['height']}, {video['fps']:.2f} fps, {video['duration']:.1f}s")
 
 
